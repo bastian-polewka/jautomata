@@ -1,10 +1,6 @@
 package net.jhoogland.jautomata;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import net.jhoogland.jautomata.queues.QueueFactory;
 import net.jhoogland.jautomata.semirings.Semiring;
@@ -15,63 +11,62 @@ import net.jhoogland.jautomata.semirings.Semiring;
  * algorithm described by [1].
  * </p>
  * <p>
- * [1] M. Mohri. General algebraic frameworks and algorithms for shortest distance 
+ * [1] M. Mohri. General algebraic frameworks and algorithms for shortest distance
  *     problems. 1998
  * </p>
- *  
+ *
  * @author Jasper Hoogland
  *
  * @param <K>
  * weight type
- * (Boolean for regular automata and Double for weighted automata) 
+ * (Boolean for regular automata and Double for weighted automata)
  */
 
 public class SingleSourceShortestDistances<K> implements SingleSourceShortestDistancesInterface<K>
 {
 	public QueueFactory<K> queueFactory;
 	public WeightConvergenceCondition<K> equalityDef;
-	
-	public SingleSourceShortestDistances(QueueFactory<K> queueFactory, WeightConvergenceCondition<K> equalityDef) 
+
+	public SingleSourceShortestDistances(QueueFactory<K> queueFactory, WeightConvergenceCondition<K> equalityDef)
 	{
 		this.queueFactory = queueFactory;
 		this.equalityDef = equalityDef;
 	}
 
-	public <L> Map<Object, K> computeShortestDistances(Automaton<L, K> automaton, Object source) 
+	@Override
+	public <L> Map<Object, K> computeShortestDistances(Automaton<L, K> automaton, Object source)
 	{
-		Map<Object, K> distances = new HashMap<Object, K>();
-		Queue<Object> queue = (Queue<Object>) this.queueFactory.createQueue(automaton, distances);		
+		Map<Object, K> distances = new HashMap<>();
+		Queue<Object> queue = this.queueFactory.createQueue(automaton, distances);
 		Semiring<K> sr = automaton.semiring();
-		HashMap<Object, K> r = new HashMap<Object, K>();
+		Map<Object, K> r = new HashMap<>();
 		K one = sr.one();
 		distances.put(source, one);
 		r.put(source, one);
 		queue.add(source);
-		
-		while (! queue.isEmpty())
+
+		while (!queue.isEmpty())
 		{
 			Object q = queue.poll();
-			K rQ = r.remove(q);			
+			K rQ = r.remove(q);
 			for (Object e : automaton.transitionsOut(q))
 			{
 				Object ne = automaton.to(e);
-				K dne = distances.get(ne);
-				if (dne == null) dne = sr.zero();
+				K dne = distances.getOrDefault(ne, sr.zero());
 				K rwe = sr.multiply(rQ, automaton.transitionWeight(e));
 				K sumDneRwe = sr.add(dne, rwe);
 
 				boolean eq = equalityDef.converged(dne, sumDneRwe);
-				if (! eq)
+				if (!eq)
 				{
 					queue.remove(ne);
 					distances.put(ne, sumDneRwe);
-					K rne = r.get(ne);
-					if (rne == null) rne = sr.zero();
+					K rne = r.getOrDefault(ne, sr.zero());
 					r.put(ne, sr.add(rne, rwe));
-					queue.add(ne); 
-				}						
+					queue.add(ne);
+				}
 			}
-		}		
+		}
 		distances.put(source, one);
 		return distances;
 	}

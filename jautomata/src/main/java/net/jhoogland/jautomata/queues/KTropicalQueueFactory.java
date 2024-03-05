@@ -1,11 +1,6 @@
 package net.jhoogland.jautomata.queues;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
 import net.jhoogland.jautomata.Automata;
 import net.jhoogland.jautomata.Automaton;
@@ -13,64 +8,44 @@ import net.jhoogland.jautomata.semirings.KTropicalSemiring;
 import net.jhoogland.jautomata.semirings.PathWeight;
 
 /**
- * 
- * Implementation of a {@link QueueFactory} that creates queues for the n shortest paths algorithm.
- * 
- * @author Jasper Hoogland
+ * Implementation of a {@link QueueFactory} that creates queues for the n
+ * shortest paths algorithm.
  *
+ * @author Jasper Hoogland
  */
+public class KTropicalQueueFactory<K> implements QueueFactory<List<PathWeight<K>>> {
 
-public class KTropicalQueueFactory<K extends Comparable<K>> implements QueueFactory<List<PathWeight<K>>>
-{
+	@Override
+	public <L> Queue<Object> createQueue(Automaton<L, List<PathWeight<K>>> automaton, Map<Object, List<PathWeight<K>>> weightMap) {
+		if (!(automaton.semiring() instanceof KTropicalSemiring)) {
+			throw new AssertionError("KTropicalQueueFactory must be used with KTropicalSemiring");
+		}
 
-	public <L> Queue<Object> createQueue(final Automaton<L, List<PathWeight<K>>> automaton, final Map<Object, List<PathWeight<K>>> weightMap) 
-	{
-//		if (automaton.topologicalOrder() != null) return new TopologicalQueueFactory<BestPathWeights<Object>>().createQueue(automaton, weightMap);
-		final HashMap<Object, Integer> numExtractions = new HashMap<Object, Integer>();
-		final KTropicalSemiring<K> sr = (KTropicalSemiring<K>) automaton.semiring(); 
-		return new PriorityQueue<Object>(32, new Comparator<Object>()
-		{
-			public int compare(Object o1, Object o2) 
-			{				
-				return mu(o1).compareTo(mu(o2));
-			}
-			
-			private K mu(Object state)
-			{
-				List<PathWeight<K>> w = weightMap.get(state);
-				Integer n = numExtractions.get(state);
-				if (n == null) n = 0;
-				int k = n < sr.k ? n : sr.k - 1;
-				return w.get(k).weight;
-			}
-			
-		})
-		{
+		Map<Object, Integer> numExtractions = new HashMap<>();
+		KTropicalSemiring<K> semiring = (KTropicalSemiring<K>) automaton.semiring();
+		Comparator<Object> comparator = Comparator.comparing(state -> {
+			List<PathWeight<K>> weight = weightMap.get(state);
+			Integer num = numExtractions.getOrDefault(state, 0);
+			int k = num < semiring.getK() ? num : semiring.getK() - 1;
+			return weight.get(k).weight;
+		}, semiring.getSrc().getComparator());
+
+		return new PriorityQueue<Object>(32, comparator) {
+			private static final long serialVersionUID = -994774619331389273L;
+
 			@Override
-			public Object poll() 
-			{				
+			public Object poll() {
 				Object s = super.poll();
-				if (s != null) 
-				{
-					Integer n = numExtractions.get(s);
-					if (n == null) n = 0;
+				if (s != null) {
+					Integer n = numExtractions.getOrDefault(s, 0);
 					n++;
 					numExtractions.put(s, n);
-					if (automaton.semiring() instanceof KTropicalSemiring)
-					{
-						KTropicalSemiring sr = (KTropicalSemiring) automaton.semiring();  
-						if (sr.k == n && Automata.isFinalState(automaton, s)) 
-						{
-//							System.out.println("queue clear " + size());
-							clear();
-						}
+					if (semiring.getK() == n && Automata.isFinalState(automaton, s)) {
+						clear();
 					}
 				}
 				return s;
 			}
 		};
 	}
-
-
-
 }
