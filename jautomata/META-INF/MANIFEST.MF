@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: jautomata
+Bundle-SymbolicName: jautomata;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: jautomata
+Export-Package: net.jhoogland.jautomata,
+ net.jhoogland.jautomata.convergence,
+ net.jhoogland.jautomata.io,
+ net.jhoogland.jautomata.operations,
+ net.jhoogland.jautomata.queues,
+ net.jhoogland.jautomata.semirings,
+ net.jhoogland.jautomata.weightfilter
