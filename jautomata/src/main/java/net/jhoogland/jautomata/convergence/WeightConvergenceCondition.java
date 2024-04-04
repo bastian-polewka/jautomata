@@ -1,4 +1,4 @@
-package net.jhoogland.jautomata;
+package net.jhoogland.jautomata.convergence;
 
 /**
  * 

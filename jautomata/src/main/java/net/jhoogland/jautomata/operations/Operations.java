@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import net.jhoogland.jautomata.*;
-import net.jhoogland.jautomata.queues.DefaultQueueFactory;
 import net.jhoogland.jautomata.semirings.*;
 
 /**
@@ -44,7 +43,7 @@ public class Operations
 
 	public static <L, K> Automaton<L, K> epsilonRemoval(Automaton<L, K> operand)
 	{
-		return new EpsilonRemoval<>(operand, new SingleSourceShortestDistances<>(new DefaultQueueFactory<>(), new ExactConvergence<>()));
+		return new EpsilonRemoval<>(operand, new SingleSourceShortestDistances<>());
 	}
 
 	/**
@@ -73,7 +72,7 @@ public class Operations
 
 	public static <L, K> Automaton<L, K> push(ReverselyAccessibleAutomaton<L, K> operand)
 	{
-		return push(operand, new SingleSourceShortestDistances<>(new DefaultQueueFactory<>(), new ExactConvergence<>()));
+		return push(operand, new SingleSourceShortestDistances<>());
 	}
 
 	/**

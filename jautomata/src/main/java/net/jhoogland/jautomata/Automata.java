@@ -3,11 +3,12 @@ package net.jhoogland.jautomata;
 import java.util.*;
 import java.util.Map.Entry;
 
+import net.jhoogland.jautomata.convergence.ExactConvergence;
 import net.jhoogland.jautomata.operations.*;
-import net.jhoogland.jautomata.queues.DefaultQueueFactory;
 import net.jhoogland.jautomata.queues.KTropicalQueueFactory;
 import net.jhoogland.jautomata.semirings.PathWeight;
 import net.jhoogland.jautomata.semirings.Semiring;
+import net.jhoogland.jautomata.weightfilter.DefaultWeightFilter;
 
 /**
  *
@@ -196,8 +197,7 @@ public class Automata
 
 	public static <L, K> K stringWeight(Automaton<L, K> automaton, List<L> string)
 	{
-		SingleSourceShortestDistances<K> sssd = new SingleSourceShortestDistances<>(new DefaultQueueFactory<>(), new ExactConvergence<>());
-		return stringWeight(automaton, sssd, string);
+		return stringWeight(automaton, new SingleSourceShortestDistances<>(), string);
 	}
 
 	/**
@@ -205,7 +205,7 @@ public class Automata
 	 * the weight of the specified string computed by the specified shortest distance algorithm.
 	 */
 
-	public static <S, T, L, K> K stringWeight(Automaton<L, K> automaton, SingleSourceShortestDistances<K> sssd, List<L> string)
+	public static <S, T, L, K> K stringWeight(Automaton<L, K> automaton, SingleSourceShortestDistancesInterface<K> sssd, List<L> string)
 	{
 		SingleStringAutomaton<L, K> stringAutomaton = new SingleStringAutomaton<>(automaton.semiring(), string);
 		AcceptorIntersection<L, K> intersection = new AcceptorIntersection<>(automaton, stringAutomaton);
@@ -217,10 +217,10 @@ public class Automata
 	 * a list with the specified number of shortest paths computed by the specified shortest distance algorithm.
 	 */
 
-	public static <L, K> List<Path<L, K>> shortestPaths(Automaton<L, K> automaton, int numPaths, SingleSourceShortestDistances<List<PathWeight<K>>> sssd)
+	public static <L, K> List<Path<L, K>> shortestPaths(Automaton<L, K> automaton, int numPaths, SingleSourceShortestDistancesInterface<List<PathWeight<K>>> sssd)
 	{
-		Semiring<K> sr = automaton.semiring();
-		/*if (sr.zero().equals(0.0)) {
+		/*Semiring<K> sr = automaton.semiring();
+		if (sr.zero().equals(0.0)) {
 			automaton = (Automaton<L, K>) Operations.realToTropicalSemiring((Automaton<L, Double>) automaton);
 		}*/
 		Automaton<L, List<PathWeight<K>>> kT = Operations.toKTropicalSemiring(automaton, numPaths);
@@ -247,7 +247,12 @@ public class Automata
 
 	public static <L, K> List<Path<L, K>> shortestPaths(Automaton<L, K> automaton, int numPaths)
 	{
-		SingleSourceShortestDistances<List<PathWeight<K>>> sssd = new SingleSourceShortestDistances<>(new KTropicalQueueFactory<>(), new ExactConvergence<>());
+		SingleSourceShortestDistancesInterface<List<PathWeight<K>>> sssd =
+			new SingleSourceShortestDistances<>(
+				new KTropicalQueueFactory<>(),
+				new DefaultWeightFilter<>(),
+				new ExactConvergence<>()
+			);
 		return shortestPaths(automaton, numPaths, sssd);
 	}
 
@@ -256,7 +261,7 @@ public class Automata
 	 * a list with the specified number of best strings computed by the specified shortest distance algorithm
 	 */
 
-	public static <L, K> List<Path<L, K>> bestStrings(Automaton<L, K> automaton, int numPaths, SingleSourceShortestDistances<List<PathWeight<K>>> sssd)
+	public static <L, K> List<Path<L, K>> bestStrings(Automaton<L, K> automaton, int numPaths, SingleSourceShortestDistancesInterface<List<PathWeight<K>>> sssd)
 	{
 		Automaton<L, K> det = Operations.determinizeER(automaton);
 		return shortestPaths(det, numPaths, sssd);
@@ -350,7 +355,7 @@ public class Automata
 	 * the shortest distance from the initial states to the final states
 	 */
 
-	public static <L, K> K shortestCompleteDistances(Automaton<L, K> automaton, SingleSourceShortestDistances<K> sssd)
+	public static <L, K> K shortestCompleteDistances(Automaton<L, K> automaton, SingleSourceShortestDistancesInterface<K> sssd)
 	{
 		Semiring<K> sr = automaton.semiring();
 		Map<Object, K> shortestDistances = shortestDistancesFromInitialStates(automaton, sssd);

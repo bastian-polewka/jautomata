@@ -27,6 +27,7 @@ public class KTropicalQueueFactory<K> implements QueueFactory<List<PathWeight<K>
 			List<PathWeight<K>> weight = weightMap.get(state);
 			Integer num = numExtractions.getOrDefault(state, 0);
 			int k = num < semiring.getK() ? num : semiring.getK() - 1;
+			k = k < weight.size() ? k : weight.size() - 1;
 			return weight.get(k).weight;
 		}, semiring.getSrc().getComparator());
 

@@ -2,8 +2,13 @@ package net.jhoogland.jautomata;
 
 import java.util.*;
 
+import net.jhoogland.jautomata.convergence.ExactConvergence;
+import net.jhoogland.jautomata.convergence.WeightConvergenceCondition;
+import net.jhoogland.jautomata.queues.DefaultQueueFactory;
 import net.jhoogland.jautomata.queues.QueueFactory;
 import net.jhoogland.jautomata.semirings.Semiring;
+import net.jhoogland.jautomata.weightfilter.DefaultWeightFilter;
+import net.jhoogland.jautomata.weightfilter.WeightFilter;
 
 /**
  * <p>
@@ -24,13 +29,18 @@ import net.jhoogland.jautomata.semirings.Semiring;
 
 public class SingleSourceShortestDistances<K> implements SingleSourceShortestDistancesInterface<K>
 {
-	public QueueFactory<K> queueFactory;
-	public WeightConvergenceCondition<K> equalityDef;
+	private final QueueFactory<K> queueFactory;
+	private final WeightFilter<K> weightFilter;
+	private final WeightConvergenceCondition<K> equalityDef;
 
-	public SingleSourceShortestDistances(QueueFactory<K> queueFactory, WeightConvergenceCondition<K> equalityDef)
-	{
+	public SingleSourceShortestDistances(QueueFactory<K> queueFactory, WeightFilter<K> weightFilter, WeightConvergenceCondition<K> equalityDef) {
 		this.queueFactory = queueFactory;
+		this.weightFilter = weightFilter;
 		this.equalityDef = equalityDef;
+	}
+
+	public SingleSourceShortestDistances() {
+		this(new DefaultQueueFactory<>(), new DefaultWeightFilter<>(), new ExactConvergence<>());
 	}
 
 	@Override
@@ -45,16 +55,37 @@ public class SingleSourceShortestDistances<K> implements SingleSourceShortestDis
 		r.put(source, one);
 		queue.add(source);
 
-		while (!queue.isEmpty())
+		queue: while (!queue.isEmpty())
 		{
 			Object q = queue.poll();
 			K rQ = r.remove(q);
-			for (Object e : automaton.transitionsOut(q))
+
+			switch(weightFilter.filterState(q, rQ)) {
+			case CONTINUE:
+				break;
+			case SKIP:
+				continue queue;
+			case STOP:
+				break queue;
+			}
+
+			transitions: for (Object e : automaton.transitionsOut(q))
 			{
 				Object ne = automaton.to(e);
 				K dne = distances.getOrDefault(ne, sr.zero());
 				K rwe = sr.multiply(rQ, automaton.transitionWeight(e));
 				K sumDneRwe = sr.add(dne, rwe);
+
+				sumDneRwe = weightFilter.filterWeight(sumDneRwe);
+
+				switch(weightFilter.filterTransition(q, rQ, e, ne, sumDneRwe)) {
+				case CONTINUE:
+					break;
+				case SKIP:
+					continue transitions;
+				case STOP:
+					break queue;
+				}
 
 				boolean eq = equalityDef.converged(dne, sumDneRwe);
 				if (!eq)
