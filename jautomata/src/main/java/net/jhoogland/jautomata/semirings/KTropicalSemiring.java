@@ -10,7 +10,7 @@ import java.util.*;
  *
  * @author Jasper Hoogland
  */
-public class KTropicalSemiring<K> extends AbstractSemiring<List<PathWeight<K>>> {
+public class KTropicalSemiring<K> extends AbstractSemiring<List<PathWeight<K>>> implements StarSemiring<List<PathWeight<K>>> {
 
 	private final int k;
 	private final boolean storePath;
@@ -91,5 +91,10 @@ public class KTropicalSemiring<K> extends AbstractSemiring<List<PathWeight<K>>> 
 
 	public Semiring<K> getSrc() {
 		return src;
+	}
+
+	@Override
+	public List<PathWeight<K>> star(List<PathWeight<K>> x) {
+		return one();
 	}
 }
