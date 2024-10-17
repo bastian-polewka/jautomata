@@ -29,10 +29,29 @@ public class KTropicalSemiring<K> extends AbstractSemiring<List<PathWeight<K>>> 
 	public List<PathWeight<K>> multiply(List<PathWeight<K>> x1, List<PathWeight<K>> x2) {
 		List<PathWeight<K>> sorted = new ArrayList<>();
 		for (PathWeight<K> pw1 : x1) {
+			boolean empty1 = pw1.transition == null;
 			for (PathWeight<K> pw2 : x2) {
 				K res = src.multiply(pw1.weight, pw2.weight);
 				if (storePath) {
-					sorted.add(new PathWeight<>(pw1, res, src, pw2.transition));
+					boolean empty2 = pw2.transition == null;
+					if (!empty1 && !empty2) {
+						if (pw1.previous == null && pw2.previous == null) {
+							sorted.add(new PathWeight<>(pw1, res, src, pw2.transition));
+						} else if (pw1.previous == null) {
+							sorted.add(new PathWeight<>(pw2, res, src, pw1.transition));
+						} else if (pw2.previous == null) {
+							sorted.add(new PathWeight<>(pw1, res, src, pw2.transition));
+						} else {
+							// TODO: We are still potentially losing information in this case
+							sorted.add(new PathWeight<>(pw1, res, src, pw2.transition));
+						}
+					} else if (empty1 && empty2) {
+						sorted.add(new PathWeight<>(null, res, src, null));
+					} else if (empty1) {
+						sorted.add(new PathWeight<>(pw2.previous, res, src, pw2.transition));
+					} else if (empty2) {
+						sorted.add(new PathWeight<>(pw1.previous, res, src, pw1.transition));
+					}
 				} else {
 					sorted.add(new PathWeight<>(null, res, src, null));
 				}
