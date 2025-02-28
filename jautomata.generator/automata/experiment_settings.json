@@ -1,0 +1,12 @@
+{
+  "semiring": "MaxTropicalInteger",
+  "settings": {
+	"warmupRuns": 0,
+	"realRuns": 1,
+	"pathsCombinations": [500, 1000],
+	"convergenceThreshold": 30,
+	"convergenceStepSize": 100,
+	"lowerBoundedness": false,
+	"upperBoundedness": false
+	}
+}

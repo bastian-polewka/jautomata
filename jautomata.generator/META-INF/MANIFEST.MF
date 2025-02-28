@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: jautomata.generator
+Bundle-SymbolicName: jautomata.generator;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: jautomata;bundle-version="1.0.0";visibility:=reexport,
+ jautomata.extensions;bundle-version="1.0.0";visibility:=reexport
+Automatic-Module-Name: jautomata.generator
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Main-Class: jautomata.generator.Evaluate
+Class-Path: jautomata.generator/lib/jackson-annotations-2.18.0.jar jautomata.generator/lib/jackson-core-2.18.0.jar jautomata.generator/lib/jackson-databind-2.18.0.jar jautomata.generator/lib/jgrapht-core-1.5.2.jar

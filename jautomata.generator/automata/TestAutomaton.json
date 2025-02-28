@@ -1,0 +1,48 @@
+{
+  "automatonName": "TestAutomaton",
+  "semiring": "MaxTropicalInteger",
+  "states": [
+    { "name": "Init", "initial": true},
+    { "name": "Players"},
+    { "name": "TwoTeams"},
+    { "name": "NeedCommunication"},
+    { "name": "Final", "final": true }
+  ],
+  "transitions": [
+    { "from": "Init", "to": "Players", "action": "addTeam", "weights": { "Team": 1 } },
+    { "from": "Players", "to": "NeedCommunication", "action": "addSolitair", "weights": { "Player": 1, "Solitair": 1 } },
+    { "from": "Players", "to": "Players", "action": "addPlayer", "weights": { "Player": 1 } },
+    { "from": "Players", "to": "TwoTeams", "action": "addTeam", "weights": { "Team": 1 } },
+    { "from": "TwoTeams", "to": "TwoTeams", "action": "addPlayer", "weights": { "Player": 1 } },
+    { "from": "TwoTeams", "to": "NeedCommunication", "action": "addChess", "weights": { "Player": 2, "Chess": 2 } },
+    { "from": "NeedCommunication", "to": "Init", "action": "addProcMod", "weights": { "ProcMod": 2 } },
+    { "from": "NeedCommunication", "to": "Final", "action": "addBT", "weights": { "BT": 1, "ProcMod": 1 } },
+    { "from": "NeedCommunication", "to": "Final", "action": "addWiFi", "weights": { "WiFi": 3 } }
+  ],
+  "settings": {
+	"warmupRuns": 0,
+	"realRuns": 1,
+	"pathsCombinations": [500, 1000, 1500],
+	"lowerBoundedness": false,
+	"upperBoundedness": false
+  },
+  "configurations": [
+	{ "configuration": { "BT": 0, "WiFi": 0 }, "nonEmptiness": false, "universality": false },
+    { "configuration": { "BT": 1, "WiFi": 0 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "BT": 0, "WiFi": 3 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "BT": 1, "WiFi": 3 }, "nonEmptiness": true, "universality": true },
+    { "configuration": { "Player": 0 }, "nonEmptiness": false, "universality": false },
+    { "configuration": { "Player": 3 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "Player": 10 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "WiFi": 2 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "WiFi": 3 }, "nonEmptiness": true, "universality": true },
+    { "configuration": { "Solitair": 3 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "Chess": 4 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "Solitair": 0, "Chess": 0 }, "nonEmptiness": false, "universality": false },
+    { "configuration": { "Solitair": 0, "Chess": 1 }, "nonEmptiness": false, "universality": false },
+    { "configuration": { "Solitair": 3, "Chess": 4 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "Solitair": 4, "Chess": 8 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "ProcMod": 0 }, "nonEmptiness": true, "universality": false },
+    { "configuration": { "ProcMod": 10 }, "nonEmptiness": true, "universality": false }
+  ]
+}
